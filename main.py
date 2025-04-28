@@ -1,17 +1,24 @@
 import chat
 import config
+import asyncio
+from aiogram import Bot, Dispatcher
+from hadlers import ro
 
 
-def main():
-    deepseek = chat.chat(config.URL, config.MODEL, config.API_KEY, config.context_path)
-    print("1")
-    print(deepseek.ask("привет, Андрей. Как погулял сегодня?"))
-    print("2")
-    print(deepseek.ask("Нормально, а ты как?"))
-    print("3")
-    print(deepseek.ask("Антон, что думаешь о vibe cding?"))
+bot = Bot(config.TELEGRAM_API)
+dp = Dispatcher()
 
+
+async def start_bot():
+    dp.include_router(ro)
+    await dp.start_polling(bot)
+
+async def main():
+    await asyncio.gather(start_bot())
+    
 
 
 if __name__=="__main__":
-    main()
+    asyncio.run(main())
+    
+    
