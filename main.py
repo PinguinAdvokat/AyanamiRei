@@ -1,4 +1,4 @@
-import chat
+import AiApi
 import config
 import asyncio
 from aiogram import Bot, Dispatcher
