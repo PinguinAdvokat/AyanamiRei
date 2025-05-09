@@ -15,6 +15,8 @@ class Chat():
         self.messages.append({"role": "user", "content": text})
         resopnse = req(self.apiKey, self.model, self.url, self.messages)
         if resopnse.status_code == 200:
+            print(text)
+            print(resopnse.json())
             self.messages.append(resopnse.json()["choices"][0]["message"])
             put_context(self.contextPath, self.messages)
             return resopnse.json()["choices"][0]["message"]["content"]

@@ -4,7 +4,7 @@ import json
 from AiApi import chat
 from aiogram import Router, F
 from aiogram.filters import ChatMemberUpdatedFilter, JOIN_TRANSITION
-from aiogram.types import ChatMemberUpdated, Message
+from aiogram.types import ChatMemberUpdated, Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
 
 ro = Router(name=__name__)
@@ -23,7 +23,10 @@ async def get_message(message: Message, bot):
         
         if message.from_user.first_name == "GG":
             aiAnswer = chat.ask(message.text)
-            await bot.send_message(chat_id=config.ADMIN_ID, text=aiAnswer)
+            id = save_mess(aiAnswer)
+            keyboard = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="отпраить в чат", callback_data=str(id))]])
+            await bot.send_message(chat_id=config.ADMIN_ID, text=aiAnswer, reply_markup=keyboard)
+            
     
     elif message.chat.id == config.ADMIN_ID:
         if message.text == "/get_system_prompt":
@@ -37,3 +40,29 @@ async def get_message(message: Message, bot):
             with open(config.context_path, "w", encoding="utf-8") as f:
                 cont[0]["content"] = message.text[21:]
                 json.dump(cont, f, ensure_ascii=False, indent=4)
+
+        elif message.text[:4] == "/ask":
+            aiAnswer = chat.ask(message.text[5:])
+            id = save_mess(aiAnswer)
+            keyboard = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="отпраить в чат", callback_data=str(id))]])
+            await bot.send_message(chat_id=config.ADMIN_ID, text=aiAnswer, reply_markup=keyboard)
+
+
+@ro.callback_query()
+async def handle_callback(query: CallbackQuery, bot):
+    print(query.data)
+    await bot.send_message(chat_id=config.ADMIN_ID, text=get_mess(int(query.data)))
+
+
+def save_mess(mess: str):
+    with open("saved_messages.json", "r", encoding="utf-8") as f:
+        messages = json.load(f)
+        messages.append(mess)
+    with open("saved_messages.json", "w", encoding="utf-8") as f:
+        json.dump(messages, f, ensure_ascii=False)
+    return len(messages) - 1
+        
+def get_mess(id: int):
+    with open("saved_messages.json", "r", encoding="utf-8") as f:
+        messages = json.load(f)
+    return messages[id]
